@@ -8,7 +8,7 @@ A brief explanation on the contents of each file:
    
  - *flux_process.py*: Python code to process the LBM data into cell-DEVS interface flow data.
    
- - *flowdata.pkl*: This file contains the cell-DEVS cells interface flow data. It is the output of *flux_process.py*
+ - *flowdata.pkl*: This file contains the cell-DEVS flow data at the interfaces of the cell configuration showed in the image. It is the output of *flux_process.py*
    
       ![particion2D](https://github.com/user-attachments/assets/51e59166-5515-4948-b73b-a5929a4878de)
  - *main.py*: Main cell-DEVS simulation file. Here the simulated span of time is defined.
