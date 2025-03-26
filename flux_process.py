@@ -1,8 +1,6 @@
-# En este archivo se procesan los datos obtenidos de una simulación LBM
-#para que se puedan usar directamente en el modelo de automata celular de CELL-DEVS.
-# Para ello hay que marcar las líneas donde estarían las interfaces de las celdas
-#e integrar el flujo normal a cada una. Finalmente guardarlo de una manera ordenada para que
-#CELL-DEVS pueda leerlo de manera sistemática.
+# In this file LBM simulation output data is processed so that it can be used in its CELL-DEVS counterpart.
+# To do this it is necessary to select the LBM data that spatially coincides with the cell-DEVS mesh interfaces
+#and integrate the normal flux of each of them. Finally, the flux data must be saved in a organized manner to be sistematically read.
 
 import numpy as np
 import pandas as pd
@@ -13,7 +11,7 @@ warmup = 220
 datafiles = os.listdir("Output/Data")
 data = pd.read_csv("Output/Data/Out_000.csv") #[x,y,z,u,v,w,d]
 
-# Dimensiones de la malla
+# Mesh  dimensions
 n_x,n_y,n_z = np.max(data[['x','y','z']].values,axis=0) + 1
 obs_x = n_x / 4
 obs_y = n_y / 2
@@ -25,8 +23,8 @@ ulimobjx = obs_x + np.sqrt(obs_x**2-(-obs_r**2+(obs_y-25)**2+obs_x**2))
 dlimobjy = obs_y - np.sqrt(obs_y**2-(-obs_r**2+(obs_x-35)**2+obs_y**2))
 ulimobjy = obs_y + np.sqrt(obs_y**2-(-obs_r**2+(obs_x-35)**2+obs_y**2))
 
-#Vertices que definen las regiones del escenario 2D
-#Se sigue un orden de izquierda a derecha y de abajo a arriba
+#2D mesh vertexes
+#Following a left->right, down->up order:
 vert = [[0,0],[50,0],
         [18,0],[18,20],[18,30],[18,50],
         [35,0],[35,10],[35,20],[35,30],[35,40],[35,40],
@@ -41,12 +39,12 @@ vert = [[0,0],[50,0],
 vert_z = np.linspace(0,n_z,11).astype(int)
 dz = vert_z[1]-vert_z[0]
 
-f={} #keys definidas como ((x1,y1,z1),(x2,y2,z2)) para las fronteras.
-#(x1,y1,z1) siempre será con x1<x2, si =: y1<y2,...
+f={} #keys defined as ((x1,y1,z1),(x2,y2,z2)) for borders
+#(x1,y1,z1) is always with x1<x2, if ==: y1<y2,...
 inic = 1
 for file in datafiles[warmup:800]:
     data = pd.read_csv('Output/Data/'+file) #[t,x,y,z,u,v,w,d]
-    #Frontera C0-T1
+    #Border 0-1
     limx=18
     dlimy=30
     ulimy=50
@@ -60,7 +58,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,0,k),(0,1,k))] = np.append(f[((0,0,k),(0,1,k))],u_mean[0]*surf)
 
-    #Frontera C0-C1
+    #Border 0-2
     limx=18
     ulimy=30
     dlimy=20
@@ -74,7 +72,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,0,k),(0,2,k))] = np.append(f[((0,0,k),(0,2,k))],u_mean[0]*surf)
 
-    #Frontera C0-T4
+    #Border 0-3
     limx=18
     ulimy=20
     surf=20*dz#/50
@@ -87,7 +85,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,0,k),(0,3,k))] = np.append(f[((0,0,k),(0,3,k))],u_mean[0]*surf)
 
-    #Frontera T1-T2
+    #Border 1-4
     ulimx=35
     dlimx=18
     ulimy=40
@@ -109,7 +107,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,1,k),(1,0,k))] = np.append(f[((0,1,k),(1,0,k))],np.dot(u_mean,ppvert)*surf)
 
-    #Frontera C1-T2
+    #Border 2-4
     ulimx=35
     dlimx=18
     limy=30
@@ -123,7 +121,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,2,k),(1,0,k))] = np.append(f[((0,2,k),(1,0,k))],u_mean[1]*surf)
 
-    #Frontera C1-T3
+    #Border 2-7
     ulimx=35
     dlimx=18
     limy=20
@@ -137,7 +135,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,2,k),(1,3,k))] = np.append(f[((0,2,k),(1,3,k))],u_mean[1]*surf)
 
-    #Frontera T4-T3
+    #Border 3-7
     ulimx=35
     dlimx=18
     ulimy=20
@@ -158,7 +156,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,3,k),(1,3,k))] = np.append(f[((0,3,k),(1,3,k))],np.dot(u_mean,ppvert)*surf)
 
-    #Frontera T1-C2
+    #Border 1-8
     limx=35
     dlimy=40
     surf=10*dz#/(lup+30)
@@ -171,7 +169,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,1,k),(2,0,k))] = np.append(f[((0,1,k),(2,0,k))],u_mean[0]*surf)
 
-    #Frontera T2-T5
+    #Border 4-5
     limx=35
     ulimy=40
     dlimy=30
@@ -185,7 +183,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((1,0,k),(1,1,k))] = np.append(f[((1,0,k),(1,1,k))],u_mean[0]*surf)
 
-    #Frontera C2-T5
+    #Border 8-5
     ulimx=50
     dlimx=35
     limy=40
@@ -199,7 +197,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((1,1,k),(2,0,k))] = np.append(f[((1,1,k),(2,0,k))],u_mean[1]*surf)
 
-    #Frontera T5-T6
+    #Border 5-6
     ulimx=50
     dlimx=35
     limy=25
@@ -213,7 +211,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((1,1,k),(1,2,k))] = np.append(f[((1,1,k),(1,2,k))],u_mean[1]*surf)
 
-    #Frontera T3-T6
+    #Border 7-6
     limx=35
     ulimy=20
     dlimy=10
@@ -227,7 +225,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((1,2,k),(1,3,k))] = np.append(f[((1,2,k),(1,3,k))],u_mean[0]*surf)
 
-    #Frontera T4-C3
+    #Border 3-11
     limx=35
     ulimy=10
     surf=ulimy*dz
@@ -240,7 +238,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((0,3,k),(2,3,k))] = np.append(f[((0,3,k),(2,3,k))],u_mean[0]*surf)
 
-    #Frontera T6-C3
+    #Border 6-11
     ulimx=50
     dlimx=35
     limy=10
@@ -254,7 +252,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((1,2,k),(2,3,k))] = np.append(f[((1,2,k),(2,3,k))],u_mean[1]*surf)
 
-    #Frontera T5-C4
+    #Border 5-9
     limx=50
     dlimy=25
     ulimy=40
@@ -268,7 +266,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((1,1,k),(2,1,k))] = np.append(f[((1,1,k),(2,1,k))],u_mean[0])
 
-    #Frontera C2-C4
+    #Border 8-9
     dlimx=50
     ulimx=65
     limy=40
@@ -282,7 +280,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((2,0,k),(2,1,k))] = np.append(f[((2,0,k),(2,1,k))],u_mean[1]*surf)
 
-    #Frontera C4-C5
+    #Border 9-10
     ulimx=65
     dlimx=50
     limy=25
@@ -296,7 +294,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((2,1,k),(2,2,k))] = np.append(f[((2,1,k),(2,2,k))],u_mean[1]*surf)
 
-    #Frontera T6-C5
+    #Border 6-10
     limx=50
     dlimy=10
     ulimy=25
@@ -310,7 +308,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((1,2,k),(2,2,k))] = np.append(f[((1,2,k),(2,2,k))],u_mean[0]*surf)
 
-    #Frontera C5-C3
+    #Border 10-11
     dlimx=50
     ulimx=65
     limy=10
@@ -324,7 +322,7 @@ for file in datafiles[warmup:800]:
         else:
             f[((2,2,k),(2,3,k))] = np.append(f[((2,2,k),(2,3,k))],u_mean[1]*surf)
 
-    #Fronteras mallas 65+. Se guardan las relaciones de la pared izquierda e superior (XY), y superior (XZ) de cada celda.
+    #Borders mesh XY-squares x>65. XY left & superior walls, and XZ superior walls for each cell coordinate. (to prevent duplicate calculation)
     x_ticks=np.arange(65,n_x,20)
     x_ticks=np.append(x_ticks,n_x-1)
     y_ticks=np.array([0,10,25,40,50])
@@ -373,7 +371,7 @@ for file in datafiles[warmup:800]:
             else:
                 f[((i0+len(x_ticks)-2,jmax-j,k),(i0+len(x_ticks)-1,jmax-j,k))]=np.append(f[((i0+len(x_ticks)-2,jmax-j,k),(i0+len(x_ticks)-1,jmax-j,k))],u_mean[-1,j,0])
 
-    #Paredes horizontales XY rectangulares & compuestas
+    #Horizontal walls rectangular XY and compound
     dxdyC = {
         (0,0): [[0,0],[18,50]],
         (2,0): [[35,40],[65,50]],
@@ -387,15 +385,15 @@ for file in datafiles[warmup:800]:
     corteCyp = ulimobjy
     corteCyn = dlimobjy
     corteCxn = dlimobjx; corteCxp=ulimobjx
-    thetaT5 = np.pi-np.arcsin((corteCyp-obs_y)/obs_r)
-    surfT5C = obs_r**2/2*(thetaT5 -np.sin(thetaT5)) + \
+    theta5 = np.pi-np.arcsin((corteCyp-obs_y)/obs_r)
+    surf5C = obs_r**2/2*(theta5 -np.sin(theta5)) + \
                 (corteCyp-dxdyC[(1,1)][0][1])*(corteCxp-dxdyC[(1,1)][0][0])/2 #np.pi-arcsin because np.arcsin returns angles in [-pi/2,pi/2]
-    thetaT6 = np.pi-np.arcsin((corteCyp-obs_y)/obs_r)
-    surfT6C = obs_r**2/2*(thetaT6-np.sin(thetaT6)) + \
+    theta6 = np.pi-np.arcsin((corteCyp-obs_y)/obs_r)
+    surf6C = obs_r**2/2*(theta6-np.sin(theta6)) + \
                 (dxdyC[(1,2)][1][1]-corteCyn)*(corteCxp-dxdyC[(1,2)][0][0])/2
     theta = 2*np.arccos((obs_x-corteCxn)/obs_r)
-    surfC1C = obs_r**2/2*(theta - np.sin(theta)) + (dxdyC[(0,2)][1][1]-dxdyC[(0,2)][0][1])*(dxdyC[(0,2)][1][0]-corteCxn)
-    obs_effect = [0,0,0,0,0,surfT5C,surfT6C,surfC1C]
+    surf2C = obs_r**2/2*(theta - np.sin(theta)) + (dxdyC[(0,2)][1][1]-dxdyC[(0,2)][0][1])*(dxdyC[(0,2)][1][0]-corteCxn)
+    obs_effect = [0,0,0,0,0,surf5C,surf6C,surf2C]
     for k in range(1,len(vert_z)-1):
         contador=0
         for key in dxdyC.keys():
@@ -411,7 +409,7 @@ for file in datafiles[warmup:800]:
                 f[(key+(k-1,),key+(k,))] = np.append(f[(key+(k-1,),key+(k,))],u_mean*surf)
             contador+=1
 
-    #Paredes horizontales XY triangulares
+    #Horizontal walls triangular XY
     dxdyT = { #dlimy, ulimy --> 1D ó 2D]
         (0,1): [[30,40],50],
         (1,0): [30,[30,40]],
@@ -424,15 +422,15 @@ for file in datafiles[warmup:800]:
     corteCyp = obs_y + np.sqrt(obs_y**2-(-obs_r**2+(obs_x-ulimx)**2+obs_y**2))
     corteCyn = obs_y - np.sqrt(obs_y**2-(-obs_r**2+(obs_x-ulimx)**2+obs_y**2))
 
-    surfT2 = 0.5*dx*(40-30)
+    surf4 = 0.5*dx*(40-30)
     alfa = np.arcsin((corteCyp-obs_y)/obs_r)-np.arcsin((dxdyT[(1,0)][0]-obs_y)/obs_r)
-    surfT2C = surfT2 - (ulimx-corteCxn)*(corteCyp-dxdyT[(1,0)][0])/2 - obs_r**2/2*(alfa-np.sin(alfa))
-    surfT1 = surfT2 + dx*(50-40)
-    surfT3 = 0.5*dx*(20-10)
+    surf4C = surf4 - (ulimx-corteCxn)*(corteCyp-dxdyT[(1,0)][0])/2 - obs_r**2/2*(alfa-np.sin(alfa))
+    surf1 = surf4 + dx*(50-40)
+    surf7 = 0.5*dx*(20-10)
     beta = np.arcsin((dxdyT[(1,3)][1]-obs_y)/obs_r)-np.arcsin((corteCyn-obs_y)/obs_r)
-    surfT3C = surfT3 - (ulimx-corteCxn)*(dxdyT[(1,3)][1]-corteCyn)/2 - obs_r**2/2*(beta-np.sin(beta))
-    surfT4 = surfT3 + dx*(10-0)
-    surf = [surfT1,surfT2C,surfT3C,surfT4]
+    surf7C = surf7 - (ulimx-corteCxn)*(dxdyT[(1,3)][1]-corteCyn)/2 - obs_r**2/2*(beta-np.sin(beta))
+    surf3 = surf7 + dx*(10-0)
+    surf = [surf1,surf4C,surf7C,surf3]
     ids = [(0,1),(1,0),(1,3),(0,3)]
 
     for k in range(1,len(vert_z)-1):
