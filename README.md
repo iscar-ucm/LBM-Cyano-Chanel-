@@ -16,5 +16,8 @@ A brief explanation on the contents of each file:
  - *sir_cell.py*: Here the case specific models of the internal computations carried out by each cell module of the cellular automata are defined.
 The local parameters of the cell configuration, models and state are defined. Upon inspection of the *cell.py* file of cell-DEVS, the local computations are carried out in the external delta of eac cell.
 
+ - *scenario.json*: In this file the cell mesh size, initial parameter values, state and configuration of each cell are stablished. Vicinity relations are also defined.
+   
  - *sir_sink.py*: This is a (currently) unused file that could be used in the future to calculate global parameters of the water body. It has no role inside the ANNSIM'25 paper.
+   
  - *sir_coupled.py*: In this file *sir_sink.py* is coupled with the rest of the scenario cells. It has no role inside the ANNSIM'25 paper.
